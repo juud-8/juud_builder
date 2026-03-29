@@ -3,16 +3,11 @@
 When pushing changes and creating PRs:
 
 1. If the branch already has an associated PR, push to whichever remote the branch is tracking.
-2. If the branch hasn't been pushed before, default to pushing to `origin` (the fork `wwwillchen/dyad`), then create a PR from the fork to the upstream repo (`dyad-sh/dyad`).
-3. If you cannot push to the fork due to permissions, push directly to `upstream` (`dyad-sh/dyad`) as a last resort.
+2. If the branch hasn't been pushed before, default to pushing to `origin` (`juud-8/dyad_builder`).
+3. Do **not** push to `dyad-sh/dyad`. This fork is the canonical remote for ongoing work.
+4. Do **not** add or rely on an `upstream` push target. If you need to compare or sync from the original project, treat `dyad-sh/dyad` as read-only and fetch it manually without pushing to it.
 
-**Bot account push permissions:** The `wwwillchen-bot` account does NOT have write access to `upstream` (`dyad-sh/dyad`). If a branch tracks `upstream` (e.g., `upstream/claude/...`), pushing will fail with a permission error. In this case, push to `origin` (the bot's fork at `wwwillchen-bot/dyad`) instead:
-
-```bash
-git push --force-with-lease -u origin HEAD
-```
-
-This overrides the branch's tracking remote. Always check which remote `origin` points to (`git remote -v`) — for bot workspaces, `origin` is typically the bot's fork, not the upstream repo.
+Always check which remote `origin` points to with `git remote -v` before pushing. In this repository, `origin` should stay pointed at `juud-8/dyad_builder`.
 
 ## `gh pr create` branch detection
 
@@ -37,15 +32,14 @@ Add `#skip-bugbot` to the PR description for trivial PRs that won't affect end-u
 - Documentation-only changes
 - CI/build configuration updates
 
-## Cross-repo PR workflows (forks)
+## Syncing from dyad-sh/dyad
 
-When running GitHub Actions with `pull_request_target` on cross-repo PRs (from forks):
+If you want to bring changes in from the original project, keep that flow read-only:
 
-- The checkout action sets `origin` to the **fork** (head repo), not the base repo
-- To rebase onto the base repo's main, you must add an `upstream` remote: `git remote add upstream https://github.com/<base-repo>.git`
-- Remote setup for cross-repo PRs: `origin` → fork (push here), `upstream` → base repo (rebase from here)
-- The `GITHUB_TOKEN` can push to the fork if the PR author enabled "Allow edits from maintainers"
-- **`claude-code-action` overwrites origin's fetch URL** to point to the base repo (using `GITHUB_REPOSITORY`). Any workflow that needs to push to the fork must set `pushurl` separately via `git remote set-url --push origin <fork-url>`, because git uses `pushurl` over `url` when both are configured. See `pr-review-responder.yml` and `claude-rebase.yml` for examples.
+- Prefer GitHub's fork sync UI or a temporary fetch-only remote
+- If you add a temporary remote, do not push to it
+- Keep `origin` as `juud-8/dyad_builder`
+- Merge or cherry-pick into your fork locally, then push back to `origin`
 
 ## GITHUB_TOKEN and workflow chaining
 
@@ -86,16 +80,6 @@ gh api repos/dyad-sh/dyad/issues/{PR_NUMBER}/labels -f "labels[]=label-name"
 
 In CI, `claude-code-action` restricts file access to the repo working directory (e.g., `/home/runner/work/dyad/dyad`). Skills that save intermediate files (like PR diffs) must use `./filename` (current working directory), **never** `/tmp/`. Using `/tmp/` causes errors like: `cat in '/tmp/pr_*_diff.patch' was blocked. For security, Claude Code may only concatenate files from the allowed working directories`.
 
-## Force-pushing after rebase with split-remote origin
-
-When `origin` has separate fetch and push URLs (e.g., fetch → `dyad-sh/dyad`, push → `wwwillchen-bot/dyad`), `git push --force-with-lease` fails with **"stale info"** after a rebase because the local tracking ref was refreshed from the fetch URL but does not reflect the push URL's state. In this specific split-remote configuration, use `git push --force origin HEAD`:
-
-```bash
-git push --force origin HEAD
-```
-
-**Note:** Plain `--force` can overwrite others' remote commits. Only use this in the split-remote scenario described above, where `--force-with-lease` cannot work. In normal setups, always prefer `--force-with-lease`.
-
 ## Rebase workflow and conflict resolution
 
 ### Handling unstaged changes during rebase
@@ -128,7 +112,7 @@ The stashed changes will be automatically merged back after the rebase completes
 If you need to rebase but have uncommitted changes (e.g., package-lock.json from startup npm install):
 
 1. Stash changes: `git stash push -m "Stash changes before rebase"`
-2. Rebase: `git rebase upstream/main` (resolve conflicts if needed)
+2. Rebase onto the branch you fetched from the original project, or onto `origin/main` if you are rebasing within your fork
 3. After rebase completes, review stashed changes: `git stash show -p`
 4. If stashed changes are spurious (e.g., package-lock.json peer markers when package.json conflicts were resolved during rebase), drop the stash: `git stash drop`
 5. Otherwise, pop stash: `git stash pop` and discard spurious changes: `git restore package-lock.json` (if package.json unchanged)

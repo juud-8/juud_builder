@@ -124,8 +124,9 @@ See [rules/e2e-testing.md](rules/e2e-testing.md) for full E2E testing guidance, 
 When pushing changes and creating PRs:
 
 1. If the branch already has an associated PR, push to whichever remote the branch is tracking.
-2. If the branch hasn't been pushed before, default to pushing to `origin` (the fork `wwwillchen/dyad`), then create a PR from the fork to the upstream repo (`dyad-sh/dyad`).
-3. If you cannot push to the fork due to permissions, push directly to `upstream` (`dyad-sh/dyad`) as a last resort.
+2. If the branch hasn't been pushed before, default to pushing to `origin` (`juud-8/dyad_builder`).
+3. Do **not** push to `dyad-sh/dyad`. This fork is the canonical remote for ongoing work.
+4. Do **not** add or rely on an `upstream` push target. If you ever need to compare or sync from the original project, treat `dyad-sh/dyad` as read-only and fetch it manually without pushing to it.
 
 ### Skipping automated review
 
