@@ -70,8 +70,8 @@ const config: ForgeConfig = {
     windowsSign: isWindowsSigningEnabled ? windowsSign : undefined,
     protocols: [
       {
-        name: "Dyad",
-        schemes: ["dyad"],
+        name: "Juud Builder",
+        schemes: ["juud-builder"],
       },
     ],
     icon: "./assets/icon/logo",

@@ -1,7 +1,7 @@
 {
-  "name": "dyad",
+  "name": "juud-builder",
   "version": "0.41.0",
-  "description": "Free, local, open-source AI app builder",
+  "description": "AI app builder — powered by Juud",
   "keywords": [],
   "license": "MIT",
   "author": {
@@ -185,5 +185,5 @@
   "engines": {
     "node": ">=24"
   },
-  "productName": "dyad"
+  "productName": "Juud Builder"
 }
